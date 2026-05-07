@@ -150,8 +150,10 @@
 
         .num { text-align: right; font-family: Consolas, Monaco, monospace; font-weight: 700; }
         td.col-total { background: #fff9e9 !important; border-left: 2px solid var(--gold); }
+codex/fix-inconsistent-header-color-v0v0zz
 codex/fix-inconsistent-header-color-yy9uld
         th.col-total { background: linear-gradient(180deg, #1f4973, var(--navy)); border-left: 2px solid var(--gold); }
+main
 main
         td.col-tax { color: #374151; }
 
@@ -252,7 +254,7 @@ function processHTML(html) {
 
 function renderTable() {
     tableBody.innerHTML = '';
-    const list = Object.values(consolidatedData).filter(x => x.Fecha !== "");
+    const list = Object.values(consolidatedData).filter(x => x.Fecha !== "" && x.DOC !== "" && x.BillNo && x.BillNo.trim() !== "");
     list.forEach(i => {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td style="color:#64748b;">${i.BillNo}</td><td>${i.Terminal}</td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`;
@@ -262,7 +264,7 @@ function renderTable() {
 }
 
 async function exportToExcel() {
-    const data = Object.values(consolidatedData).filter(x => x.Fecha !== "");
+    const data = Object.values(consolidatedData).filter(x => x.Fecha !== "" && x.DOC !== "" && x.BillNo && x.BillNo.trim() !== "");
     if (data.length === 0) { statusMsg.innerText = 'No hay datos para exportar.'; return; }
 
     const workbook = new ExcelJS.Workbook();
