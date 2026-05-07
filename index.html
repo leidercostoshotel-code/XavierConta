@@ -150,6 +150,7 @@
 
         .num { text-align: right; font-family: Consolas, Monaco, monospace; font-weight: 700; }
         td.col-total { background: #fff9e9 !important; border-left: 2px solid var(--gold); }
+codex/fix-inconsistent-header-color-zzwgms
 codex/fix-inconsistent-header-color-v0v0zz
 codex/fix-inconsistent-header-color-yy9uld
         th.col-total { background: linear-gradient(180deg, #1f4973, var(--navy)); border-left: 2px solid var(--gold); }
@@ -192,7 +193,10 @@ main
     <div class="table-wrapper">
         <table id="main-table">
             <thead><tr>
+codex/fix-inconsistent-header-color-zzwgms
+                <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>TOTAL GROSS</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
                 <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>FISCAL BILL NO</th><th>TERMINAL</th><th>TOTAL GROSS</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
+main
             </tr></thead>
             <tbody id="table-body"></tbody>
         </table>
@@ -257,7 +261,7 @@ function renderTable() {
     const list = Object.values(consolidatedData).filter(x => x.Fecha !== "" && x.DOC !== "" && x.BillNo && x.BillNo.trim() !== "");
     list.forEach(i => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td style="color:#64748b;">${i.BillNo}</td><td>${i.Terminal}</td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`;
+        tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`;
         tableBody.appendChild(tr);
     });
     statusMsg.innerText = "Documentos consolidados: " + list.length;
@@ -270,13 +274,13 @@ async function exportToExcel() {
     const workbook = new ExcelJS.Workbook();
     const ws = workbook.addWorksheet('Ventas');
 
-    const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','FISCAL BILL NO','TERMINAL','TOTAL GROSS','BASE 10%','SUB TOTAL','SUB + 10%','BASE 18%','TOTAL FACTURADO','SUBTOTAL 18%'];
+    const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','TOTAL GROSS','BASE 10%','SUB TOTAL','SUB + 10%','BASE 18%','TOTAL FACTURADO','SUBTOTAL 18%'];
     ws.addRow(headers);
 
-    data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.BillNo, i.Terminal, i.GrossAmt, i.G10_Base, i.G10_Tax, i.G10_Sub, i.G18_Base, i.G18_Tax, i.G18_Sub]));
+    data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.GrossAmt, i.G10_Base, i.G10_Tax, i.G10_Sub, i.G18_Base, i.G18_Tax, i.G18_Sub]));
 
     ws.views = [{state: 'frozen', ySplit: 1}];
-    ws.autoFilter = { from: 'A1', to: 'P1' };
+    ws.autoFilter = { from: 'A1', to: 'N1' };
 
     ws.getRow(1).eachCell(cell => {
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
@@ -285,7 +289,7 @@ async function exportToExcel() {
         cell.border = { top: { style: 'thin', color: { argb: 'FFB7C7DA' } }, left: { style: 'thin', color: { argb: 'FFB7C7DA' } }, bottom: { style: 'thin', color: { argb: 'FFB7C7DA' } }, right: { style: 'thin', color: { argb: 'FFB7C7DA' } } };
     });
 
-    const moneyCols = [10,11,12,13,14,15,16];
+    const moneyCols = [8,9,10,11,12,13,14];
     moneyCols.forEach(col => ws.getColumn(col).numFmt = '#,##0.00');
     ws.getColumn(1).width = 14; ws.getColumn(2).width = 10; ws.getColumn(7).width = 28; ws.getColumn(8).width = 20;
     ws.columns.forEach(c => { if (!c.width) c.width = 14; });
@@ -296,7 +300,7 @@ async function exportToExcel() {
                 cell.border = { top: { style: 'thin', color: { argb: 'FFE4EAF3' } }, left: { style: 'thin', color: { argb: 'FFE4EAF3' } }, bottom: { style: 'thin', color: { argb: 'FFE4EAF3' } }, right: { style: 'thin', color: { argb: 'FFE4EAF3' } } };
                 if (rowNumber % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FBFF' } };
             });
-            ws.getCell(`J${rowNumber}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF4D6' } };
+            ws.getCell(`H${rowNumber}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF4D6' } };
         }
     });
 
