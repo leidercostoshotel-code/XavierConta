@@ -188,7 +188,11 @@
     <div class="table-wrapper">
         <table id="main-table">
             <thead><tr>
+codex/investigar-columnas-en-blanco-adicionales-gjifvx
+                <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>FISCAL BILL NO</th><th>TERMINAL</th><th>SUB+18%</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
+
                 <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>FISCAL BILL NO</th><th>TERMINAL</th><th>TOTAL GROSS</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
+main
             </tr></thead>
             <tbody id="table-body"></tbody>
         </table>
@@ -266,7 +270,7 @@ async function exportToExcel() {
     const workbook = new ExcelJS.Workbook();
     const ws = workbook.addWorksheet('Ventas');
 
-    const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','TOTAL GROSS','BASE 10%','SUB TOTAL','SUB + 10%','BASE 18%','TOTAL FACTURADO','SUBTOTAL 18%'];
+    const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','SUB+18%','BASE 10%','SUB TOTAL','SUB + 10%','BASE 18%','TOTAL FACTURADO','SUBTOTAL 18%'];
     ws.addRow(headers);
 
     data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.GrossAmt, i.G10_Base, i.G10_Tax, i.G10_Sub, i.G18_Base, i.G18_Tax, i.G18_Sub]));
