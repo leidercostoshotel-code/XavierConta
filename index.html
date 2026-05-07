@@ -2,155 +2,176 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Gastro Control Pro - Business Edition V22</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gastro Control Pro - Business Edition V23</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <style>
-        /* PALETA CORPORATIVA PROFESIONAL */
         :root {
-            --navy: #1e3a5f;      /* Azul Marino Ejecutivo */
-            --border: #d1d5db;    /* Gris suave para bordes */
-            --bg-body: #f3f4f6;   /* Fondo gris muy tenue */
-            --text-main: #1f2937; /* Gris casi negro para lectura */
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --navy: #15304f;
+            --navy-2: #1e4a77;
+            --gold: #f5b700;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --line: #d9e1ee;
+            --ok: #0f9d58;
         }
 
-        body { 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color: var(--bg-body); 
-            color: var(--text-main); 
-            margin: 0; 
-            padding: 20px; 
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: radial-gradient(circle at top right, #ecf4ff, var(--bg));
+            color: var(--text);
+            padding: 24px;
         }
 
-        .container { 
-            max-width: 98%; 
-            margin: auto; 
-            background: white; 
-            padding: 25px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        .container {
+            width: min(1700px, 100%);
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
+            padding: 26px;
+            border: 1px solid #ecf0f7;
         }
 
-        h1 { 
-            color: var(--navy); 
-            font-size: 24px; 
-            margin-top: 0;
-            border-left: 5px solid var(--navy);
-            padding-left: 15px;
-            margin-bottom: 20px;
-        }
-
-        /* BARRA DE ESTADO PROFESIONAL */
-        .status-bar {
-            background: #ffffff;
-            border: 1px solid var(--border);
-            padding: 12px 20px;
-            margin-bottom: 20px;
-            border-radius: 6px;
-            font-weight: 600;
+        h1 {
+            margin: 0;
             color: var(--navy);
+            letter-spacing: 0.3px;
+            font-size: 30px;
+        }
+
+        .subtitle {
+            margin-top: 6px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .status-bar {
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--navy), var(--navy-2));
+            color: #fff;
+            border-radius: 12px;
+            padding: 14px 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
-        /* ZONA DE CARGA DISCRETA */
-        .drop-zone { 
-            border: 2px dashed var(--navy); 
-            padding: 25px; 
-            text-align: center; 
-            background: #f9fafb; 
-            margin-bottom: 20px; 
+        .drop-zone {
+            border: 2px dashed #8fb1d3;
+            background: linear-gradient(180deg, #f7fbff, #eff6ff);
+            border-radius: 14px;
+            padding: 26px;
+            text-align: center;
             cursor: pointer;
-            border-radius: 6px;
-            color: #4b5563;
-            transition: 0.2s;
-        }
-        .drop-zone:hover { background: #eff6ff; }
-
-        .btn-group { margin-bottom: 20px; display: flex; gap: 12px; }
-
-        button { 
-            padding: 10px 24px; 
-            border: none; 
-            border-radius: 5px;
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 14px;
-            transition: opacity 0.2s;
+            transition: all 0.25s ease;
+            color: #355473;
+            margin-bottom: 18px;
+            font-weight: 500;
         }
 
-        .btn-excel { background-color: #107c41; color: white; } /* Verde Excel */
-        .btn-clear { background-color: #6b7280; color: white; } /* Gris Corporativo */
-        button:hover { opacity: 0.9; }
-
-        /* TABLA EMPRESARIAL */
-        .table-wrapper { 
-            overflow-x: auto; 
-            border: 1px solid var(--border); 
-            border-radius: 6px;
-            max-height: 650px; 
+        .drop-zone:hover {
+            border-color: var(--navy-2);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(30, 74, 119, 0.12);
         }
 
-        table { 
-            border-collapse: collapse; 
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 11px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover { transform: translateY(-1px); }
+
+        .btn-excel {
+            background: linear-gradient(90deg, #0d8f4a, var(--ok));
+            color: white;
+            box-shadow: 0 8px 18px rgba(15, 157, 88, 0.25);
+        }
+
+        .btn-clear {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            max-height: 640px;
+            background: #fff;
+        }
+
+        table {
             width: 100%;
             min-width: 3000px;
+            border-collapse: collapse;
             font-size: 13px;
-            background: white;
         }
 
-        th { 
-            background-color: var(--navy); /* Único color sólido profesional */
-            color: #ffffff; 
-            padding: 14px 10px; 
-            text-align: left; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            border-right: 1px solid rgba(255,255,255,0.1);
+        th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: linear-gradient(180deg, #1f4973, var(--navy));
+            color: white;
+            padding: 12px 10px;
+            text-align: left;
+            border-right: 1px solid rgba(255,255,255,0.12);
+            letter-spacing: .25px;
         }
 
-        td { 
-            padding: 10px; 
-            border-bottom: 1px solid var(--border); 
-            border-right: 1px solid #f3f4f6;
-            white-space: nowrap; 
+        td {
+            border-bottom: 1px solid #edf2f9;
+            border-right: 1px solid #f0f4f9;
+            padding: 10px;
+            white-space: nowrap;
         }
 
-        tr:nth-child(even) { background-color: #f9fafb; }
-        tr:hover { background-color: #f0f7ff; }
+        tr:nth-child(even) { background: #f8fbff; }
+        tr:hover { background: #eaf3ff; }
 
-        .num { 
-            text-align: right; 
-            font-family: 'Consolas', 'Monaco', monospace; 
-            font-weight: 600;
-            color: #111827;
-        }
+        .num { text-align: right; font-family: Consolas, Monaco, monospace; font-weight: 700; }
+        .col-total { background: #fff9e9 !important; border-left: 2px solid var(--gold); }
+        .col-tax { color: #374151; }
 
-        /* COLUMNAS DE RESALTE CORPORATIVO */
-        .col-total { background-color: #fefce8 !important; border-left: 2px solid #eab308; }
-        .col-tax { color: #374151; font-size: 12px; }
-        
-        .tag-doc { 
-            padding: 3px 8px; 
-            border: 1px solid var(--navy); 
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
+        .tag-doc {
+            display: inline-block;
+            padding: 3px 9px;
+            background: #edf4ff;
             color: var(--navy);
+            border: 1px solid #bfd6f2;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
         }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>Gastro Control Pro <span style="font-weight: 400; color: #6b7280;">| Gestión de Ventas</span></h1>
-    
+    <h1>Gastro Control Pro</h1>
+    <div class="subtitle">Consolidación de ventas con diseño ejecutivo + exportación Excel con formato profesional.</div>
+
     <div class="status-bar">
         <span id="status">Listo para procesar archivos</span>
-        <span id="counter" style="font-size: 12px; color: #6b7280;">V22.0.1</span>
+        <span id="counter" style="font-size: 12px; opacity: 0.9;">V23.0.0</span>
     </div>
 
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
@@ -159,152 +180,132 @@
     </div>
 
     <div class="btn-group">
-        <button class="btn-excel" onclick="exportToExcel()">Descargar reporte Excel</button>
+        <button class="btn-excel" onclick="exportToExcel()">Descargar Excel con formato</button>
         <button class="btn-clear" onclick="clearAll()">Limpiar tabla</button>
     </div>
 
     <div class="table-wrapper">
         <table id="main-table">
-            <thead>
-                <tr>
-                    <th>FECHA</th>
-                    <th>DOC</th>
-                    <th>SERIE</th>
-                    <th>NRO</th>
-                    <th>TIPO DOC.</th>
-                    <th>PASAPORTE</th>
-                    <th>-</th>
-                    <th>CLIENTE</th>
-                    <th>REDONDEO</th>
-                    <th>PROPINA</th>
-                    <th>FISCAL BILL NO</th>
-                    <th>TERMINAL</th>
-                    <th class="col-total">TOTAL GROSS</th>
-                    <th style="background-color: #2a4d7d;">BASE 10%</th>
-                    <th class="col-tax">SUB TOTAL</th>
-                    <th class="col-tax">SUB + 10%</th>
-                    <th style="background-color: #2a4d7d;">BASE 18%</th>
-                    <th class="col-tax">TOTAL FACTURADO</th>
-                    <th class="col-tax">SUBTOTAL 18%</th>
-                </tr>
-            </thead>
+            <thead><tr>
+                <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>FISCAL BILL NO</th><th>TERMINAL</th><th class="col-total">TOTAL GROSS</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
+            </tr></thead>
             <tbody id="table-body"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    let consolidatedData = {};
+let consolidatedData = {};
+const fileInput = document.getElementById('file-input');
+const tableBody = document.getElementById('table-body');
+const statusMsg = document.getElementById('status');
+fileInput.onchange = (e) => handleFiles(e.target.files);
 
-    const fileInput = document.getElementById('file-input');
-    const tableBody = document.getElementById('table-body');
-    const statusMsg = document.getElementById('status');
+function handleFiles(files) {
+    if (files.length === 0) return;
+    statusMsg.innerText = "Sincronizando " + files.length + " archivos...";
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (event) => { processHTML(event.target.result); renderTable(); };
+        reader.readAsText(file);
+    });
+}
 
-    fileInput.onchange = (e) => handleFiles(e.target.files);
-
-    function handleFiles(files) {
-        if (files.length === 0) return;
-        statusMsg.innerText = "Sincronizando " + files.length + " archivos...";
-        
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                processHTML(event.target.result);
-                renderTable();
-            };
-            reader.readAsText(file);
-        });
-    }
-
-    function processHTML(html) {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const rows = doc.querySelectorAll('tr');
-
-        rows.forEach(row => {
-            const cells = Array.from(row.querySelectorAll('td'))
-                .map(c => c.innerText.trim().replace(/\u00a0/g, ' '))
-                .filter(t => t !== '');
-
-            if (cells.length >= 6 && /^\d{2}-\d{2}-\d{2}$/.test(cells[0])) {
-                const docRaw = cells[2];
-                if (!docRaw || docRaw.toLowerCase().includes("total")) return;
-
-                const docKey = docRaw.replace(/\s/g, ''); 
-
-                if (!consolidatedData[docKey]) {
-                    consolidatedData[docKey] = {
-                        Fecha: "", DOC: "", SERIE: "", Nro: "", TipoDoc: "",
-                        Pasaporte: "", NOMBRE: "", BillNo: docRaw, Terminal: "",
-                        GrossAmt: 0, G10_Base: 0, G10_Tax: 0, G10_Sub: 0, G18_Base: 0, G18_Tax: 0, G18_Sub: 0
-                    };
-                }
-
-                const d = consolidatedData[docKey];
-                const p = cells[0].split('-');
-                d.Fecha = `${p[0]}/${p[1]}/20${p[2]}`;
-
-                if (isNaN(parseFloat(cells[4].replace(/,/g, '')))) {
-                    const bp = docKey.split('-');
-                    d.TipoDoc = bp[0]; d.SERIE = bp[1]; d.Nro = bp[2];
-                    d.DOC = docKey.includes("-B") ? "BOL" : (docKey.includes("-F") ? "FAC" : "NCR");
-                    d.Terminal = cells[3];
-                    d.NOMBRE = cells[4];
-                    d.Pasaporte = cells[5];
-                }
-
-                const nums = cells.map(c => c.replace(/,/g, '')).filter(c => !isNaN(parseFloat(c)) && c.includes('.'));
-                
-                if (nums.length >= 4) {
-                    d.GrossAmt = parseFloat(nums[0]) || d.GrossAmt;
-                    d.G10_Base = parseFloat(nums[1]) || d.G10_Base;
-                    d.G10_Tax = parseFloat(nums[2]) || d.G10_Tax;
-                    d.G10_Sub = parseFloat(nums[3]) || d.G10_Sub;
-                    d.G18_Base = parseFloat(nums[4]) || d.G18_Base;
-                    d.G18_Tax = parseFloat(nums[5]) || d.G18_Tax;
-                    d.G18_Sub = parseFloat(nums[6]) || d.G18_Sub;
-                }
+function processHTML(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const rows = doc.querySelectorAll('tr');
+    rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim().replace(/\u00a0/g, ' ')).filter(t => t !== '');
+        if (cells.length >= 6 && /^\d{2}-\d{2}-\d{2}$/.test(cells[0])) {
+            const docRaw = cells[2];
+            if (!docRaw || docRaw.toLowerCase().includes("total")) return;
+            const docKey = docRaw.replace(/\s/g, '');
+            if (!consolidatedData[docKey]) {
+                consolidatedData[docKey] = { Fecha: "", DOC: "", SERIE: "", Nro: "", TipoDoc: "", Pasaporte: "", NOMBRE: "", BillNo: docRaw, Terminal: "", GrossAmt: 0, G10_Base: 0, G10_Tax: 0, G10_Sub: 0, G18_Base: 0, G18_Tax: 0, G18_Sub: 0 };
             }
-        });
-    }
+            const d = consolidatedData[docKey];
+            const p = cells[0].split('-');
+            d.Fecha = `${p[0]}/${p[1]}/20${p[2]}`;
+            if (isNaN(parseFloat(cells[4].replace(/,/g, '')))) {
+                const bp = docKey.split('-');
+                d.TipoDoc = bp[0]; d.SERIE = bp[1]; d.Nro = bp[2];
+                d.DOC = docKey.includes("-B") ? "BOL" : (docKey.includes("-F") ? "FAC" : "NCR");
+                d.Terminal = cells[3]; d.NOMBRE = cells[4]; d.Pasaporte = cells[5];
+            }
+            const nums = cells.map(c => c.replace(/,/g, '')).filter(c => !isNaN(parseFloat(c)) && c.includes('.'));
+            if (nums.length >= 4) {
+                d.GrossAmt = parseFloat(nums[0]) || d.GrossAmt;
+                d.G10_Base = parseFloat(nums[1]) || d.G10_Base;
+                d.G10_Tax = parseFloat(nums[2]) || d.G10_Tax;
+                d.G10_Sub = parseFloat(nums[3]) || d.G10_Sub;
+                d.G18_Base = parseFloat(nums[4]) || d.G18_Base;
+                d.G18_Tax = parseFloat(nums[5]) || d.G18_Tax;
+                d.G18_Sub = parseFloat(nums[6]) || d.G18_Sub;
+            }
+        }
+    });
+}
 
-    function renderTable() {
-        tableBody.innerHTML = '';
-        const list = Object.values(consolidatedData).filter(x => x.Fecha !== "");
-        
-        list.forEach(i => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${i.Fecha}</td>
-                <td><span class="tag-doc">${i.DOC}</span></td>
-                <td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td>
-                <td></td>
-                <td style="color: #111827; font-weight: 500;">${i.NOMBRE}</td>
-                <td></td><td></td><td style="color: #6b7280;">${i.BillNo}</td><td>${i.Terminal}</td>
-                <td class="num col-total">${i.GrossAmt.toFixed(2)}</td>
-                <td class="num" style="color: #1e40af;">${i.G10_Base.toFixed(2)}</td>
-                <td class="num col-tax">${i.G10_Tax.toFixed(2)}</td>
-                <td class="num col-tax">${i.G10_Sub.toFixed(2)}</td>
-                <td class="num" style="color: #1e40af;">${i.G18_Base.toFixed(2)}</td>
-                <td class="num col-tax">${i.G18_Tax.toFixed(2)}</td>
-                <td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>
-            `;
-            tableBody.appendChild(tr);
-        });
-        statusMsg.innerText = "Documentos consolidados: " + list.length;
-    }
+function renderTable() {
+    tableBody.innerHTML = '';
+    const list = Object.values(consolidatedData).filter(x => x.Fecha !== "");
+    list.forEach(i => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td style="color:#64748b;">${i.BillNo}</td><td>${i.Terminal}</td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`;
+        tableBody.appendChild(tr);
+    });
+    statusMsg.innerText = "Documentos consolidados: " + list.length;
+}
 
-    function exportToExcel() {
-        const data = Object.values(consolidatedData).filter(x => x.Fecha !== "");
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-        XLSX.writeFile(wb, "Reporte_Ventas_GastroControl.xlsx");
-    }
+async function exportToExcel() {
+    const data = Object.values(consolidatedData).filter(x => x.Fecha !== "");
+    if (data.length === 0) { statusMsg.innerText = 'No hay datos para exportar.'; return; }
 
-    function clearAll() {
-        consolidatedData = {}; tableBody.innerHTML = ''; statusMsg.innerText = 'Listo para procesar archivos';
-    }
+    const workbook = new ExcelJS.Workbook();
+    const ws = workbook.addWorksheet('Ventas');
+
+    const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','FISCAL BILL NO','TERMINAL','TOTAL GROSS','BASE 10%','SUB TOTAL','SUB + 10%','BASE 18%','TOTAL FACTURADO','SUBTOTAL 18%'];
+    ws.addRow(headers);
+
+    data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.BillNo, i.Terminal, i.GrossAmt, i.G10_Base, i.G10_Tax, i.G10_Sub, i.G18_Base, i.G18_Tax, i.G18_Sub]));
+
+    ws.views = [{state: 'frozen', ySplit: 1}];
+    ws.autoFilter = { from: 'A1', to: 'P1' };
+
+    ws.getRow(1).eachCell(cell => {
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = { top: { style: 'thin', color: { argb: 'FFB7C7DA' } }, left: { style: 'thin', color: { argb: 'FFB7C7DA' } }, bottom: { style: 'thin', color: { argb: 'FFB7C7DA' } }, right: { style: 'thin', color: { argb: 'FFB7C7DA' } } };
+    });
+
+    const moneyCols = [10,11,12,13,14,15,16];
+    moneyCols.forEach(col => ws.getColumn(col).numFmt = '#,##0.00');
+    ws.getColumn(1).width = 14; ws.getColumn(2).width = 10; ws.getColumn(7).width = 28; ws.getColumn(8).width = 20;
+    ws.columns.forEach(c => { if (!c.width) c.width = 14; });
+
+    ws.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+            row.eachCell(cell => {
+                cell.border = { top: { style: 'thin', color: { argb: 'FFE4EAF3' } }, left: { style: 'thin', color: { argb: 'FFE4EAF3' } }, bottom: { style: 'thin', color: { argb: 'FFE4EAF3' } }, right: { style: 'thin', color: { argb: 'FFE4EAF3' } } };
+                if (rowNumber % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FBFF' } };
+            });
+            ws.getCell(`J${rowNumber}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF4D6' } };
+        }
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Reporte_Ventas_GastroControl_Profesional.xlsx';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    statusMsg.innerText = 'Excel exportado con formato profesional.';
+}
+
+function clearAll() { consolidatedData = {}; tableBody.innerHTML = ''; statusMsg.innerText = 'Listo para procesar archivos'; }
 </script>
 </body>
 </html>
