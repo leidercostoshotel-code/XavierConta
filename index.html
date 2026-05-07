@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gastro Control Pro - Business Edition V23</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --bg: #f4f6fb;
@@ -274,47 +275,71 @@ async function exportToExcel() {
     const data = Object.values(consolidatedData).filter(x => x.Fecha !== "");
     if (data.length === 0) { statusMsg.innerText = 'No hay datos para exportar.'; return; }
 
-    const workbook = new ExcelJS.Workbook();
-    const ws = workbook.addWorksheet('Ventas');
-
     const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','FISCAL BILL NO','TERMINAL','TOTAL GROSS','BASE 10%','SUB TOTAL','SUB + 10%','BASE 18%','TOTAL FACTURADO','SUBTOTAL 18%'];
-    ws.addRow(headers);
 
-    data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.BillNo, i.Terminal, i.GrossAmt, i.G10_Base, i.G10_Tax, i.G10_Sub, i.G18_Base, i.G18_Tax, i.G18_Sub]));
+    try {
+        if (typeof ExcelJS === 'undefined') throw new Error('ExcelJS no disponible');
 
-    ws.views = [{state: 'frozen', ySplit: 1}];
-    ws.autoFilter = { from: 'A1', to: 'P1' };
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet('Ventas');
+        ws.addRow(headers);
 
-    ws.getRow(1).eachCell(cell => {
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = { top: { style: 'thin', color: { argb: 'FFB7C7DA' } }, left: { style: 'thin', color: { argb: 'FFB7C7DA' } }, bottom: { style: 'thin', color: { argb: 'FFB7C7DA' } }, right: { style: 'thin', color: { argb: 'FFB7C7DA' } } };
-    });
+        data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.BillNo, i.Terminal, i.GrossAmt, i.G10_Base, i.G10_Tax, i.G10_Sub, i.G18_Base, i.G18_Tax, i.G18_Sub]));
 
-    const moneyCols = [10,11,12,13,14,15,16];
-    moneyCols.forEach(col => ws.getColumn(col).numFmt = '#,##0.00');
-    ws.getColumn(1).width = 14; ws.getColumn(2).width = 10; ws.getColumn(7).width = 28; ws.getColumn(8).width = 20;
-    ws.columns.forEach(c => { if (!c.width) c.width = 14; });
+        ws.views = [{state: 'frozen', ySplit: 1}];
+        ws.autoFilter = { from: 'A1', to: 'P1' };
 
-    ws.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) {
-            row.eachCell(cell => {
-                cell.border = { top: { style: 'thin', color: { argb: 'FFE4EAF3' } }, left: { style: 'thin', color: { argb: 'FFE4EAF3' } }, bottom: { style: 'thin', color: { argb: 'FFE4EAF3' } }, right: { style: 'thin', color: { argb: 'FFE4EAF3' } } };
-                if (rowNumber % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FBFF' } };
-            });
-            ws.getCell(`J${rowNumber}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF4D6' } };
+        ws.getRow(1).eachCell(cell => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = { top: { style: 'thin', color: { argb: 'FFB7C7DA' } }, left: { style: 'thin', color: { argb: 'FFB7C7DA' } }, bottom: { style: 'thin', color: { argb: 'FFB7C7DA' } }, right: { style: 'thin', color: { argb: 'FFB7C7DA' } } };
+        });
+
+        const moneyCols = [10,11,12,13,14,15,16];
+        moneyCols.forEach(col => ws.getColumn(col).numFmt = '#,##0.00');
+        ws.getColumn(1).width = 14; ws.getColumn(2).width = 10; ws.getColumn(7).width = 28; ws.getColumn(8).width = 20;
+        ws.columns.forEach(c => { if (!c.width) c.width = 14; });
+
+        ws.eachRow((row, rowNumber) => {
+            if (rowNumber > 1) {
+                row.eachCell(cell => {
+                    cell.border = { top: { style: 'thin', color: { argb: 'FFE4EAF3' } }, left: { style: 'thin', color: { argb: 'FFE4EAF3' } }, bottom: { style: 'thin', color: { argb: 'FFE4EAF3' } }, right: { style: 'thin', color: { argb: 'FFE4EAF3' } } };
+                    if (rowNumber % 2 === 0) cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FBFF' } };
+                });
+                ws.getCell(`J${rowNumber}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF4D6' } };
+            }
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Reporte_Ventas_GastroControl_Profesional.xlsx';
+        a.click();
+        URL.revokeObjectURL(a.href);
+        statusMsg.innerText = 'Excel exportado con formato profesional.';
+    } catch (error) {
+        if (typeof XLSX === 'undefined') {
+            statusMsg.innerText = 'Error al exportar: librerías no disponibles.';
+            console.error(error);
+            return;
         }
-    });
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Reporte_Ventas_GastroControl_Profesional.xlsx';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    statusMsg.innerText = 'Excel exportado con formato profesional.';
+        const plainData = data.map(i => ({
+            FECHA: i.Fecha, DOC: i.DOC, SERIE: i.SERIE, NRO: i.Nro, 'TIPO DOC.': i.TipoDoc,
+            PASAPORTE: i.Pasaporte, CLIENTE: i.NOMBRE, 'FISCAL BILL NO': i.BillNo, TERMINAL: i.Terminal,
+            'TOTAL GROSS': i.GrossAmt, 'BASE 10%': i.G10_Base, 'SUB TOTAL': i.G10_Tax, 'SUB + 10%': i.G10_Sub,
+            'BASE 18%': i.G18_Base, 'TOTAL FACTURADO': i.G18_Tax, 'SUBTOTAL 18%': i.G18_Sub
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(plainData, { header: headers });
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Ventas');
+        XLSX.writeFile(wb, 'Reporte_Ventas_GastroControl.xlsx');
+        statusMsg.innerText = 'Excel exportado en modo compatible.';
+        console.warn('Fallback XLSX activado:', error);
+    }
 }
 
 function clearAll() { consolidatedData = {}; tableBody.innerHTML = ''; statusMsg.innerText = 'Listo para procesar archivos'; }
