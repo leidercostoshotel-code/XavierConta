@@ -150,12 +150,7 @@
 
         .num { text-align: right; font-family: Consolas, Monaco, monospace; font-weight: 700; }
         td.col-total { background: #fff9e9 !important; border-left: 2px solid var(--gold); }
-codex/fix-inconsistent-header-color-zzwgms
-codex/fix-inconsistent-header-color-v0v0zz
-codex/fix-inconsistent-header-color-yy9uld
         th.col-total { background: linear-gradient(180deg, #1f4973, var(--navy)); border-left: 2px solid var(--gold); }
-main
-main
         td.col-tax { color: #374151; }
 
         .tag-doc {
@@ -193,10 +188,7 @@ main
     <div class="table-wrapper">
         <table id="main-table">
             <thead><tr>
-codex/fix-inconsistent-header-color-zzwgms
-                <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>TOTAL GROSS</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
                 <th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>FISCAL BILL NO</th><th>TERMINAL</th><th>TOTAL GROSS</th><th>BASE 10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">SUB + 10%</th><th>BASE 18%</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">SUBTOTAL 18%</th>
-main
             </tr></thead>
             <tbody id="table-body"></tbody>
         </table>
@@ -261,7 +253,7 @@ function renderTable() {
     const list = Object.values(consolidatedData).filter(x => x.Fecha !== "" && x.DOC !== "" && x.BillNo && x.BillNo.trim() !== "");
     list.forEach(i => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`;
+        tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td>${i.BillNo}</td><td>${i.Terminal}</td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`;
         tableBody.appendChild(tr);
     });
     statusMsg.innerText = "Documentos consolidados: " + list.length;
