@@ -57,13 +57,33 @@ const headerAliases = {
   'LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.NET_AMT': 'OP.GRAVADA',
   'LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.TAX_AMT': 'I.G.V.',
   'LIST_G_TAX_GROUP.G_TAX_GROUP_3.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT': 'PROPINA',
-  'TOTAL_GROSS': 'IMPORTE TOTAL'
+  'TOTAL_GROSS': 'IMPORTE TOTAL',
+  'R_CONS_10': 'R. CONS. 10%'
 };
+
+const DERIVED_COLUMN_KEY = 'R_CONS_10';
+const TOTAL_NONREV_KEY = 'TOTAL_NONREV';
+const PROPINA_KEY = 'LIST_G_TAX_GROUP.G_TAX_GROUP_3.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT';
 
 function getHeaderLabel(header) {
   return headerAliases[header] || header;
 }
 
+
+
+function parseAmount(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const normalized = String(value).replace(/,/g, '').trim();
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function applyDerivedColumns(row) {
+  const totalNonRev = parseAmount(row[TOTAL_NONREV_KEY]);
+  const propina = parseAmount(row[PROPINA_KEY]) ?? 0;
+  if (totalNonRev === null) return;
+  row[DERIVED_COLUMN_KEY] = (totalNonRev - propina).toFixed(2);
+}
 
 fileInput.onchange = (e) => handleFiles(e.target.files);
 
@@ -90,6 +110,7 @@ function processXML(xmlText) {
   xml.querySelectorAll('G_BILL_NO').forEach(node => {
     const row = {};
     flattenNode(node, row, '');
+    applyDerivedColumns(row);
     tableRows.push(row);
   });
   tableHeaders = Array.from(new Set(tableRows.flatMap(r => Object.keys(r))));
