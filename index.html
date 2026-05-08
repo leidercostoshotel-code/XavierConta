@@ -22,6 +22,9 @@
         .table-wrapper { overflow-x:auto; border:1px solid var(--line); border-radius:12px; max-height:640px; background:#fff; }
         table { width:100%; min-width:4800px; border-collapse:collapse; font-size:13px; }
         th { position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#1f4973,var(--navy)); color:#fff; padding:10px; text-align:left; border-right:1px solid rgba(255,255,255,.12); white-space:nowrap; }
+        .filter-row th { top:41px; background:#e9f0fa; padding:6px; z-index:19; }
+        .filter-input { width:100%; border:1px solid #bfd0e6; border-radius:8px; padding:6px 8px; font-size:12px; color:#1f2937; background:#fff; }
+        .filter-input:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 2px rgba(59,130,246,.15); }
         td { border-bottom:1px solid #edf2f9; border-right:1px solid #f0f4f9; padding:9px; white-space:nowrap; }
     </style>
 </head>
@@ -34,6 +37,7 @@
 <script>
 let consolidatedData = {};
 let dynamicColumns = [];
+let filters = {};
 const fileInput = document.getElementById('file-input');
 const tableHead = document.getElementById('table-head');
 const tableBody = document.getElementById('table-body');
@@ -150,9 +154,31 @@ function processXML(xmlText) {
     });
 }
 
+function updateFilter(column, value) {
+    filters[column] = (value || '').toLowerCase().trim();
+    renderTable();
+}
+
 function renderTable() {
-    const list = Object.values(consolidatedData);
-    tableHead.innerHTML = `<tr>${dynamicColumns.map(c => `<th>${c}</th>`).join('')}</tr>`;
+    const list = Object.values(consolidatedData).filter((item) =>
+        dynamicColumns.every((col) => {
+            const needle = filters[col] || '';
+            if (!needle) return true;
+            return String(item[col] ?? '').toLowerCase().includes(needle);
+        })
+    );
+
+    tableHead.innerHTML = `
+        <tr>${dynamicColumns.map(c => `<th>${c}</th>`).join('')}</tr>
+        <tr class="filter-row">
+            ${dynamicColumns.map((c) => `<th><input class="filter-input" placeholder="Filtrar" value="${(filters[c] || '').replace(/"/g, '&quot;')}" data-col="${c}"></th>`).join('')}
+        </tr>
+    `;
+
+    tableHead.querySelectorAll('.filter-input').forEach((input) => {
+        input.addEventListener('input', (e) => updateFilter(e.target.dataset.col, e.target.value));
+    });
+
     tableBody.innerHTML = '';
     list.forEach((item) => {
         const tr = document.createElement('tr');
@@ -182,7 +208,7 @@ async function exportToExcel() {
     URL.revokeObjectURL(a.href);
 }
 
-function clearAll() { consolidatedData = {}; initBaseColumns(); renderTable(); }
+function clearAll() { consolidatedData = {}; filters = {}; initBaseColumns(); renderTable(); }
 </script>
 </body>
 </html>
