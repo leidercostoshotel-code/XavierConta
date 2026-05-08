@@ -64,6 +64,7 @@ const headerAliases = {
 const DERIVED_COLUMN_KEY = 'R_CONS_10';
 const TOTAL_NONREV_KEY = 'TOTAL_NONREV';
 const PROPINA_KEY = 'LIST_G_TAX_GROUP.G_TAX_GROUP_3.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT';
+const TAX_GROUP_4_GROSS_KEY = 'LIST_G_TAX_GROUP.G_TAX_GROUP_4.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT';
 
 function getHeaderLabel(header) {
   return headerAliases[header] || header;
@@ -81,8 +82,9 @@ function parseAmount(value) {
 function applyDerivedColumns(row) {
   const totalNonRev = parseAmount(row[TOTAL_NONREV_KEY]);
   const propina = parseAmount(row[PROPINA_KEY]) ?? 0;
+  const taxGroup4Gross = parseAmount(row[TAX_GROUP_4_GROSS_KEY]) ?? 0;
   if (totalNonRev === null) return;
-  row[DERIVED_COLUMN_KEY] = (totalNonRev - propina).toFixed(2);
+  row[DERIVED_COLUMN_KEY] = (totalNonRev - propina - taxGroup4Gross).toFixed(2);
 }
 
 fileInput.onchange = (e) => handleFiles(e.target.files);
