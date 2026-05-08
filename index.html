@@ -63,6 +63,31 @@ function setValue(obj, key, value) {
     ensureColumn(key);
 }
 
+function flattenXmlNode(node, target, prefix = '') {
+    const elementChildren = Array.from(node.childNodes).filter((n) => n.nodeType === 1);
+    const currentName = (node.localName || node.tagName || '').toUpperCase();
+    const basePath = prefix ? `${prefix}_${currentName}` : currentName;
+
+    if (elementChildren.length === 0) {
+        setValue(target, basePath, node.textContent || '');
+        return;
+    }
+
+    const counts = {};
+    elementChildren.forEach((child) => {
+        const childName = (child.localName || child.tagName || '').toUpperCase();
+        counts[childName] = (counts[childName] || 0) + 1;
+    });
+
+    const seen = {};
+    elementChildren.forEach((child) => {
+        const childName = (child.localName || child.tagName || '').toUpperCase();
+        seen[childName] = (seen[childName] || 0) + 1;
+        const suffix = counts[childName] > 1 ? `_${seen[childName]}` : '';
+        flattenXmlNode(child, target, `${basePath}${suffix}`);
+    });
+}
+
 function handleFiles(files) {
     if (files.length === 0) return;
     Array.from(files).forEach((file) => {
@@ -122,13 +147,6 @@ function processXML(xmlText) {
             return tag === localName.toUpperCase();
         });
 
-    const directChildren = (root, localName) =>
-        Array.from(root.childNodes).filter((node) => {
-            if (node.nodeType !== 1) return false;
-            const tag = (node.localName || node.tagName || '').toUpperCase();
-            return tag === localName.toUpperCase();
-        });
-
     const firstText = (root, localName) => {
         const node = byLocalName(root, localName)[0];
         return (node?.textContent || '').trim();
@@ -148,28 +166,9 @@ function processXML(xmlText) {
 
         const d = getOrCreateDoc(fiscalBillNo.replace(/\s/g, ''));
 
-        Array.from(bill.childNodes).filter((n) => n.nodeType === 1).forEach((child) => {
-            const childTag = (child.localName || child.tagName || '').toUpperCase();
-            if (childTag === 'LIST_G_TAX_GROUP') {
-                const groups = directChildren(child, 'G_TAX_GROUP');
-                groups.forEach((group, idx) => {
-                    const ix = idx + 1;
-                    const n = firstText(group, 'N');
-                    const desc = firstText(group, 'TAX_GROUP_DESC');
-                    setValue(d, `TAX_GROUP_${ix}_N`, n);
-                    setValue(d, `TAX_GROUP_${ix}_DESC`, desc);
-                    const grossAmtNodes = byLocalName(group, 'G_GROSS_AMT');
-                    grossAmtNodes.forEach((amt, aIdx) => {
-                        const ax = aIdx + 1;
-                        setValue(d, `TAX_GROUP_${ix}_GROSS_AMT_${ax}`, firstText(amt, 'GROSS_AMT'));
-                        setValue(d, `TAX_GROUP_${ix}_TAX_AMT_${ax}`, firstText(amt, 'TAX_AMT'));
-                        setValue(d, `TAX_GROUP_${ix}_NET_AMT_${ax}`, firstText(amt, 'NET_AMT'));
-                    });
-                });
-                return;
-            }
-            setValue(d, childTag, child.textContent || '');
-        });
+        Array.from(bill.childNodes)
+            .filter((n) => n.nodeType === 1)
+            .forEach((child) => flattenXmlNode(child, d));
 
         const parts = fiscalBillNo.split('-');
         setValue(d, 'DOC', (parts[1] || '').startsWith('B') ? 'BOL' : ((parts[1] || '').startsWith('F') ? 'FAC' : 'NCR'));
