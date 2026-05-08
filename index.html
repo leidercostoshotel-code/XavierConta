@@ -110,35 +110,53 @@ function processHTML(html) {
 function processXML(xmlText) {
     const parser = new DOMParser();
     const xml = parser.parseFromString(xmlText, 'text/xml');
-    const bills = xml.querySelectorAll('G_BILL_NO');
+    const parserError = xml.querySelector('parsererror');
+    if (parserError) {
+        console.error('No se pudo leer el XML:', parserError.textContent || '');
+        return;
+    }
+
+    const byLocalName = (root, localName) =>
+        Array.from(root.getElementsByTagName('*')).filter((node) => {
+            const tag = (node.localName || node.tagName || '').toUpperCase();
+            return tag === localName.toUpperCase();
+        });
+
+    const firstText = (root, localName) => {
+        const node = byLocalName(root, localName)[0];
+        return (node?.textContent || '').trim();
+    };
+
+    const bills = byLocalName(xml, 'G_BILL_NO');
 
     bills.forEach((bill) => {
-        const fiscalBillNo = (bill.querySelector('FISCAL_BILL_NO')?.textContent || '').trim();
-        const status = (bill.querySelector('STATUS')?.textContent || '').trim().toUpperCase();
-        const isVoid = (bill.querySelector('IS_VOID')?.textContent || '').trim().toUpperCase();
+        const fiscalBillNo = firstText(bill, 'FISCAL_BILL_NO');
+        const status = firstText(bill, 'STATUS').toUpperCase();
+        const isVoid = firstText(bill, 'IS_VOID').toUpperCase();
         if (!fiscalBillNo || status === 'VOID' || isVoid === 'Y') return;
 
         const d = getOrCreateDoc(fiscalBillNo.replace(/\s/g, ''));
 
         Array.from(bill.children).forEach((child) => {
-            if (child.tagName === 'LIST_G_TAX_GROUP') {
-                const groups = child.querySelectorAll('G_TAX_GROUP');
+            const childTag = (child.localName || child.tagName || '').toUpperCase();
+            if (childTag === 'LIST_G_TAX_GROUP') {
+                const groups = byLocalName(child, 'G_TAX_GROUP');
                 groups.forEach((group, idx) => {
                     const ix = idx + 1;
-                    const n = (group.querySelector('N')?.textContent || '').trim();
-                    const desc = (group.querySelector('TAX_GROUP_DESC')?.textContent || '').trim();
+                    const n = firstText(group, 'N');
+                    const desc = firstText(group, 'TAX_GROUP_DESC');
                     setValue(d, `TAX_GROUP_${ix}_N`, n);
                     setValue(d, `TAX_GROUP_${ix}_DESC`, desc);
-                    group.querySelectorAll('G_GROSS_AMT').forEach((amt, aIdx) => {
+                    byLocalName(group, 'G_GROSS_AMT').forEach((amt, aIdx) => {
                         const ax = aIdx + 1;
-                        setValue(d, `TAX_GROUP_${ix}_GROSS_AMT_${ax}`, amt.querySelector('GROSS_AMT')?.textContent || '');
-                        setValue(d, `TAX_GROUP_${ix}_TAX_AMT_${ax}`, amt.querySelector('TAX_AMT')?.textContent || '');
-                        setValue(d, `TAX_GROUP_${ix}_NET_AMT_${ax}`, amt.querySelector('NET_AMT')?.textContent || '');
+                        setValue(d, `TAX_GROUP_${ix}_GROSS_AMT_${ax}`, firstText(amt, 'GROSS_AMT'));
+                        setValue(d, `TAX_GROUP_${ix}_TAX_AMT_${ax}`, firstText(amt, 'TAX_AMT'));
+                        setValue(d, `TAX_GROUP_${ix}_NET_AMT_${ax}`, firstText(amt, 'NET_AMT'));
                     });
                 });
                 return;
             }
-            setValue(d, child.tagName, child.textContent || '');
+            setValue(d, childTag, child.textContent || '');
         });
 
         const parts = fiscalBillNo.split('-');
