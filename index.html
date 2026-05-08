@@ -84,7 +84,10 @@ function processHTML(html) {
     const doc = parser.parseFromString(html, 'text/html');
     const rows = doc.querySelectorAll('tr');
     rows.forEach((row) => {
-        const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim().replace(/ /g, ' '));
+        const cells = Array.from(row.querySelectorAll('td')).map((c) => {
+            const raw = (c.textContent || '').replace(/ /g, ' ');
+            return raw.replace(/\s+/g, ' ').trim();
+        });
         if (cells.length < 6 || !/^\d{2}-\d{2}-\d{2}$/.test(cells[0])) return;
         const docRaw = cells[2];
         if (!docRaw || docRaw.toLowerCase().includes('total')) return;
