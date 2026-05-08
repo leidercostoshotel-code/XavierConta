@@ -53,6 +53,14 @@ const tableBody = document.getElementById('table-body');
 const statusMsg = document.getElementById('status');
 const mainTable = document.getElementById('main-table');
 const tableHeadRow = mainTable.querySelector('thead tr');
+const headerAliases = {
+  'LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.NET_AMT': 'OP.GRAVADA'
+};
+
+function getHeaderLabel(header) {
+  return headerAliases[header] || header;
+}
+
 
 fileInput.onchange = (e) => handleFiles(e.target.files);
 
@@ -106,7 +114,7 @@ function renderTable() {
   tableHeadRow.innerHTML = '';
   tableHeaders.forEach(h => {
     const th = document.createElement('th');
-    th.textContent = h;
+    th.textContent = getHeaderLabel(h);
     tableHeadRow.appendChild(th);
   });
   tableRows.forEach(row => {
@@ -127,7 +135,7 @@ async function exportToExcel() {
   if (!tableRows.length) return;
   const workbook = new ExcelJS.Workbook();
   const ws = workbook.addWorksheet('XML');
-  ws.addRow(tableHeaders);
+  ws.addRow(tableHeaders.map(h => getHeaderLabel(h)));
   tableRows.forEach(r => ws.addRow(tableHeaders.map(h => r[h] ?? '')));
   ws.views = [{state: 'frozen', ySplit: 1}];
   ws.autoFilter = { from: 'A1', to: ws.getRow(1).getCell(tableHeaders.length).address };
