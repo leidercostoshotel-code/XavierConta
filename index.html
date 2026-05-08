@@ -41,21 +41,115 @@
 <div class="container">
     <div class="hero"><div class="title-wrap"><div class="title-icon"><i class="fa-solid fa-building-columns"></i></div><div><h1>contabilidad</h1><div class="subtitle"><i class="fa-solid fa-hotel"></i> Swissotel Lima Peru.</div></div></div><div class="badge-premium"><i class="fa-solid fa-crown"></i> PREMIUM BUSINESS</div></div>
     <div class="status-bar"><span id="status"><i class="fa-solid fa-chart-line"></i> Listo para procesar archivos</span><span id="counter" style="font-size: 12px; opacity: 0.9;">V23.0.0</span></div>
-    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Haga clic o arrastre aquí los reportes HTML de Oracle</span><input type="file" id="file-input" multiple accept=".html" style="display: none;"></div>
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Haga clic o arrastre aquí los reportes XML de Oracle</span><input type="file" id="file-input" multiple accept=".xml,text/xml,application/xml" style="display: none;"></div>
     <div class="btn-group"><button class="btn-excel" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> Descargar Excel con formato</button><button class="btn-clear" onclick="clearAll()"><i class="fa-solid fa-trash"></i> Limpiar tabla</button></div>
     <div class="table-wrapper"><table id="main-table"><thead><tr><th>FECHA</th><th>DOC</th><th>SERIE</th><th>NRO</th><th>TIPO DOC.</th><th>PASAPORTE</th><th>-</th><th>CLIENTE</th><th>REDONDEO</th><th>PROPINA</th><th>FISCAL BILL NO</th><th>TERMINAL</th><th>SUB+18%</th><th class="col-tax">SUB + 10%</th><th>18%</th><th>10%</th><th class="col-tax">SUB TOTAL</th><th class="col-tax">TOTAL FACTURADO</th><th class="col-tax">PEND</th></tr></thead><tbody id="table-body"></tbody></table></div>
 </div>
 <script>
-let consolidatedData = {};
+let tableRows = [];
+let tableHeaders = [];
 const fileInput = document.getElementById('file-input');
 const tableBody = document.getElementById('table-body');
 const statusMsg = document.getElementById('status');
+const mainTable = document.getElementById('main-table');
+const tableHeadRow = mainTable.querySelector('thead tr');
+
 fileInput.onchange = (e) => handleFiles(e.target.files);
-function handleFiles(files) { if (files.length === 0) return; statusMsg.innerText = "Sincronizando " + files.length + " archivos..."; Array.from(files).forEach(file => { const reader = new FileReader(); reader.onload = (event) => { processHTML(event.target.result); renderTable(); }; reader.readAsText(file); }); }
-function processHTML(html) { const parser = new DOMParser(); const doc = parser.parseFromString(html, 'text/html'); const rows = doc.querySelectorAll('tr'); rows.forEach(row => { const cells = Array.from(row.querySelectorAll('td')).map(c => c.innerText.trim().replace(/\u00a0/g, ' ')).filter(t => t !== ''); if (cells.length >= 6 && /^\d{2}-\d{2}-\d{2}$/.test(cells[0])) { const docRaw = cells[2]; if (!docRaw || docRaw.toLowerCase().includes("total")) return; const docKey = docRaw.replace(/\s/g, ''); if (!consolidatedData[docKey]) { consolidatedData[docKey] = { Fecha: "", DOC: "", SERIE: "", Nro: "", TipoDoc: "", Pasaporte: "", NOMBRE: "", BillNo: docRaw, Terminal: "", GrossAmt: 0, G10_Base: 0, G10_Tax: 0, G10_Sub: 0, G18_Base: 0, G18_Tax: 0, G18_Sub: 0 }; } const d = consolidatedData[docKey]; const p = cells[0].split('-'); d.Fecha = `${p[0]}/${p[1]}/20${p[2]}`; if (isNaN(parseFloat(cells[4].replace(/,/g, '')))) { const bp = docKey.split('-'); d.TipoDoc = bp[0]; d.SERIE = bp[1]; d.Nro = bp[2]; d.DOC = docKey.includes("-B") ? "BOL" : (docKey.includes("-F") ? "FAC" : "NCR"); d.Terminal = cells[3]; d.NOMBRE = cells[4]; d.Pasaporte = cells[5]; } const nums = cells.map(c => c.replace(/,/g, '')).filter(c => !isNaN(parseFloat(c)) && c.includes('.')); if (nums.length >= 4) { d.GrossAmt = parseFloat(nums[0]) || d.GrossAmt; d.G10_Base = parseFloat(nums[1]) || d.G10_Base; d.G10_Tax = parseFloat(nums[2]) || d.G10_Tax; d.G10_Sub = parseFloat(nums[3]) || d.G10_Sub; d.G18_Base = parseFloat(nums[4]) || d.G18_Base; d.G18_Tax = parseFloat(nums[5]) || d.G18_Tax; d.G18_Sub = parseFloat(nums[6]) || d.G18_Sub; } } }); }
-function renderTable() { tableBody.innerHTML = ''; const list = Object.values(consolidatedData).filter(x => x.Fecha !== "" && x.DOC !== "" && x.BillNo && x.BillNo.trim() !== ""); list.forEach(i => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${i.Fecha}</td><td><span class="tag-doc">${i.DOC}</span></td><td>${i.SERIE}</td><td>${i.Nro}</td><td>${i.TipoDoc}</td><td>${i.Pasaporte}</td><td></td><td style="font-weight:600;">${i.NOMBRE}</td><td></td><td></td><td>${i.BillNo}</td><td>${i.Terminal}</td><td class="num col-total">${i.GrossAmt.toFixed(2)}</td><td class="num col-tax">${i.G10_Sub.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G18_Base.toFixed(2)}</td><td class="num" style="color:#1d4ed8;">${i.G10_Base.toFixed(2)}</td><td class="num col-tax">${i.G10_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Tax.toFixed(2)}</td><td class="num col-tax">${i.G18_Sub.toFixed(2)}</td>`; tableBody.appendChild(tr); }); statusMsg.innerText = "Documentos consolidados: " + list.length; }
-async function exportToExcel() { const data = Object.values(consolidatedData).filter(x => x.Fecha !== "" && x.DOC !== "" && x.BillNo && x.BillNo.trim() !== ""); if (data.length === 0) { statusMsg.innerText = 'No hay datos para exportar.'; return; } const workbook = new ExcelJS.Workbook(); const ws = workbook.addWorksheet('Ventas'); const headers = ['FECHA','DOC','SERIE','NRO','TIPO DOC.','PASAPORTE','CLIENTE','SUB+18%','SUB + 10%','BASE 18%','BASE 10%','SUB TOTAL','TOTAL FACTURADO','SUBTOTAL 18%']; ws.addRow(headers); data.forEach(i => ws.addRow([i.Fecha, i.DOC, i.SERIE, i.Nro, i.TipoDoc, i.Pasaporte, i.NOMBRE, i.GrossAmt, i.G10_Sub, i.G18_Base, i.G10_Base, i.G10_Tax, i.G18_Tax, i.G18_Sub])); ws.views = [{state: 'frozen', ySplit: 1}]; ws.autoFilter = { from: 'A1', to: 'N1' }; ws.getRow(1).eachCell(cell => { cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } }; cell.alignment = { vertical: 'middle', horizontal: 'center' }; }); const moneyCols = [8,9,10,11,12,13,14]; moneyCols.forEach(col => ws.getColumn(col).numFmt = '#,##0.00'); ws.getColumn(1).width = 14; ws.getColumn(2).width = 10; ws.getColumn(7).width = 28; ws.getColumn(8).width = 20; const buffer = await workbook.xlsx.writeBuffer(); const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Reporte_Ventas_GastroControl_Profesional.xlsx'; a.click(); URL.revokeObjectURL(a.href); statusMsg.innerText = 'Excel exportado con formato profesional.'; }
-function clearAll() { consolidatedData = {}; tableBody.innerHTML = ''; statusMsg.innerText = 'Listo para procesar archivos'; }
+
+function handleFiles(files) {
+  if (files.length === 0) return;
+  statusMsg.innerText = `Importando ${files.length} archivo(s) XML...`;
+  clearAll(false);
+  let processed = 0;
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      processXML(event.target.result);
+      processed += 1;
+      if (processed === files.length) renderTable();
+    };
+    reader.readAsText(file);
+  });
+}
+
+function processXML(xmlText) {
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, 'application/xml');
+  if (xml.querySelector('parsererror')) return;
+  xml.querySelectorAll('G_BILL_NO').forEach(node => {
+    const row = {};
+    flattenNode(node, row, '');
+    tableRows.push(row);
+  });
+  tableHeaders = Array.from(new Set(tableRows.flatMap(r => Object.keys(r))));
+}
+
+function flattenNode(node, target, parentKey) {
+  const children = Array.from(node.children);
+  if (children.length === 0) {
+    target[parentKey || node.tagName] = (node.textContent || '').trim().replace(/\s+/g, ' ');
+    return;
+  }
+  const totalByTag = {};
+  children.forEach(c => totalByTag[c.tagName] = (totalByTag[c.tagName] || 0) + 1);
+  const seen = {};
+  children.forEach(child => {
+    seen[child.tagName] = (seen[child.tagName] || 0) + 1;
+    const suffix = totalByTag[child.tagName] > 1 ? `_${seen[child.tagName]}` : '';
+    const key = parentKey ? `${parentKey}.${child.tagName}${suffix}` : `${child.tagName}${suffix}`;
+    flattenNode(child, target, key);
+  });
+}
+
+function renderTable() {
+  tableBody.innerHTML = '';
+  tableHeadRow.innerHTML = '';
+  tableHeaders.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    tableHeadRow.appendChild(th);
+  });
+  tableRows.forEach(row => {
+    const tr = document.createElement('tr');
+    tableHeaders.forEach(h => {
+      const td = document.createElement('td');
+      const v = row[h] ?? '';
+      td.textContent = v;
+      if (v !== '' && !isNaN(Number(v))) td.classList.add('num');
+      tr.appendChild(td);
+    });
+    tableBody.appendChild(tr);
+  });
+  statusMsg.innerText = `Filas importadas: ${tableRows.length} | Columnas detectadas: ${tableHeaders.length}`;
+}
+
+async function exportToExcel() {
+  if (!tableRows.length) return;
+  const workbook = new ExcelJS.Workbook();
+  const ws = workbook.addWorksheet('XML');
+  ws.addRow(tableHeaders);
+  tableRows.forEach(r => ws.addRow(tableHeaders.map(h => r[h] ?? '')));
+  ws.views = [{state: 'frozen', ySplit: 1}];
+  ws.autoFilter = { from: 'A1', to: ws.getRow(1).getCell(tableHeaders.length).address };
+  ws.getRow(1).eachCell(cell => { cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } }; cell.alignment = { vertical: 'middle', horizontal: 'center' }; });
+  tableHeaders.forEach((_, i) => ws.getColumn(i + 1).width = 22);
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Reporte_XML_Completo.xlsx';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function clearAll(resetInput = true) {
+  tableRows = [];
+  tableHeaders = [];
+  tableBody.innerHTML = '';
+  tableHeadRow.innerHTML = '';
+  if (resetInput) fileInput.value = '';
+  statusMsg.innerText = 'Listo para procesar XML';
+}
 </script>
 </body>
 </html>
