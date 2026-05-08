@@ -20,7 +20,7 @@
         .btn-excel { background:linear-gradient(90deg,#0d8f4a,var(--ok)); color:#fff; }
         .btn-clear { background:#e5e7eb; color:#1f2937; }
         .table-wrapper { overflow-x:auto; border:1px solid var(--line); border-radius:12px; max-height:640px; background:#fff; }
-        table { width:100%; min-width:4800px; border-collapse:collapse; font-size:13px; }
+        table { width:max-content; min-width:100%; border-collapse:collapse; font-size:13px; }
         th { position:sticky; top:0; z-index:20; background:linear-gradient(180deg,#1f4973,var(--navy)); color:#fff; padding:10px; text-align:left; border-right:1px solid rgba(255,255,255,.12); white-space:nowrap; }
         .filter-row th { top:41px; background:#e9f0fa; padding:6px; z-index:19; }
         .filter-input { width:100%; border:1px solid #bfd0e6; border-radius:8px; padding:6px 8px; font-size:12px; color:#1f2937; background:#fff; }
@@ -87,13 +87,14 @@ function processHTML(html) {
             const raw = (c.textContent || '').replace(/ /g, ' ');
             return raw.replace(/\s+/g, ' ').trim();
         });
-        if (cells.length < 6 || !/^\d{2}-\d{2}-\d{2}$/.test(cells[0])) return;
+        if (cells.length < 6 || !/^\d{2}[-/]\d{2}[-/](?:\d{2}|\d{4})$/.test(cells[0])) return;
         const docRaw = cells[2];
         if (!docRaw || docRaw.toLowerCase().includes('total')) return;
         const docKey = docRaw.replace(/\s/g, '');
         const d = getOrCreateDoc(docKey);
-        const p = cells[0].split('-');
-        setValue(d, 'FECHA', `${p[0]}/${p[1]}/20${p[2]}`);
+        const dateParts = cells[0].replace(/\//g, '-').split('-');
+        const year = dateParts[2].length === 2 ? `20${dateParts[2]}` : dateParts[2];
+        setValue(d, 'FECHA', `${dateParts[0]}/${dateParts[1]}/${year}`);
         const bp = docKey.split('-');
         setValue(d, 'TIPO DOC.', bp[0] || '');
         setValue(d, 'SERIE', bp[1] || '');
@@ -211,6 +212,8 @@ async function exportToExcel() {
 }
 
 function clearAll() { consolidatedData = {}; initBaseColumns(); renderTable(); }
+
+renderTable();
 </script>
 </body>
 </html>
