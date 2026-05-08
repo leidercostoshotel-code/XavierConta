@@ -155,25 +155,46 @@ function processXML(xmlText) {
         d.NOMBRE = (bill.querySelector('DISPLAY_NAME')?.textContent || '').trim() || d.NOMBRE;
         d.Pasaporte = (bill.querySelector('TAX1_NO')?.textContent || '').trim() || d.Pasaporte;
 
+        d.G10_Base = 0; d.G10_Tax = 0; d.G10_Sub = 0;
+        d.G18_Base = 0; d.G18_Tax = 0; d.G18_Sub = 0;
+
+        let totalGrossFromGroups = 0;
+        let totalTaxFromGroups = 0;
+        let totalNetFromGroups = 0;
+
         bill.querySelectorAll('G_TAX_GROUP').forEach((group) => {
             const n = (group.querySelector('N')?.textContent || '').trim();
             const gross = parseFloat(group.querySelector('GROSS_AMT')?.textContent || '0') || 0;
             const tax = parseFloat(group.querySelector('TAX_AMT')?.textContent || '0') || 0;
             const net = parseFloat(group.querySelector('NET_AMT')?.textContent || '0') || 0;
 
+            totalGrossFromGroups += gross;
+            totalTaxFromGroups += tax;
+            totalNetFromGroups += net;
+
             if (n === '1') {
-                d.G18_Sub = gross;
-                d.G18_Tax = tax;
-                d.G18_Base = net;
+                d.G18_Sub += gross;
+                d.G18_Tax += tax;
+                d.G18_Base += net;
+                return;
             }
-            if (n === '6') {
-                d.G10_Sub = gross;
-                d.G10_Tax = tax;
-                d.G10_Base = net;
+
+            // En varios XML de Oracle, los montos no gravados aparecen en Tax Group 6, 3 o 4.
+            if (n === '6' || n === '3' || n === '4') {
+                d.G10_Sub += gross;
+                d.G10_Tax += tax;
+                d.G10_Base += net;
             }
         });
 
-        d.GrossAmt = (parseFloat(bill.querySelector('TOTAL_GROSS')?.textContent || '0') || 0);
+        const totalGross = parseFloat(bill.querySelector('TOTAL_GROSS')?.textContent || '0') || 0;
+        const totalTax = parseFloat(bill.querySelector('TOTAL_TAX')?.textContent || '0') || 0;
+        const totalNet = parseFloat(bill.querySelector('TOTAL_NET')?.textContent || '0') || 0;
+
+        d.GrossAmt = totalGross || totalGrossFromGroups || d.GrossAmt;
+        if (!d.G18_Tax && totalTax) d.G18_Tax = totalTax;
+        if (!d.G18_Base && totalNet) d.G18_Base = totalNet;
+
     });
 }
 
