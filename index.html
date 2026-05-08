@@ -37,7 +37,6 @@
 <script>
 let consolidatedData = {};
 let dynamicColumns = [];
-let filters = {};
 const fileInput = document.getElementById('file-input');
 const tableHead = document.getElementById('table-head');
 const tableBody = document.getElementById('table-body');
@@ -175,30 +174,12 @@ function processXML(xmlText) {
     });
 }
 
-function updateFilter(column, value) {
-    filters[column] = (value || '').toLowerCase().trim();
-    renderTable();
-}
-
 function renderTable() {
-    const list = Object.values(consolidatedData).filter((item) =>
-        dynamicColumns.every((col) => {
-            const needle = filters[col] || '';
-            if (!needle) return true;
-            return String(item[col] ?? '').toLowerCase().includes(needle);
-        })
-    );
+    const list = Object.values(consolidatedData);
 
     tableHead.innerHTML = `
         <tr>${dynamicColumns.map(c => `<th>${c}</th>`).join('')}</tr>
-        <tr class="filter-row">
-            ${dynamicColumns.map((c) => `<th><input class="filter-input" placeholder="Filtrar" value="${(filters[c] || '').replace(/"/g, '&quot;')}" data-col="${c}"></th>`).join('')}
-        </tr>
     `;
-
-    tableHead.querySelectorAll('.filter-input').forEach((input) => {
-        input.addEventListener('input', (e) => updateFilter(e.target.dataset.col, e.target.value));
-    });
 
     tableBody.innerHTML = '';
     list.forEach((item) => {
@@ -229,7 +210,7 @@ async function exportToExcel() {
     URL.revokeObjectURL(a.href);
 }
 
-function clearAll() { consolidatedData = {}; filters = {}; initBaseColumns(); renderTable(); }
+function clearAll() { consolidatedData = {}; initBaseColumns(); renderTable(); }
 </script>
 </body>
 </html>
