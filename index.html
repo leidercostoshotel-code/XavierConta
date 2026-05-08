@@ -109,7 +109,7 @@ function processHTML(html) {
 
 function processXML(xmlText) {
     const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, 'text/xml');
+    const xml = parser.parseFromString(xmlText, 'application/xml');
     const parserError = xml.querySelector('parsererror');
     if (parserError) {
         console.error('No se pudo leer el XML:', parserError.textContent || '');
@@ -122,12 +122,23 @@ function processXML(xmlText) {
             return tag === localName.toUpperCase();
         });
 
+    const directChildren = (root, localName) =>
+        Array.from(root.childNodes).filter((node) => {
+            if (node.nodeType !== 1) return false;
+            const tag = (node.localName || node.tagName || '').toUpperCase();
+            return tag === localName.toUpperCase();
+        });
+
     const firstText = (root, localName) => {
         const node = byLocalName(root, localName)[0];
         return (node?.textContent || '').trim();
     };
 
     const bills = byLocalName(xml, 'G_BILL_NO');
+    if (bills.length === 0) {
+        console.warn('XML leído, pero no se encontraron nodos G_BILL_NO.');
+        return;
+    }
 
     bills.forEach((bill) => {
         const fiscalBillNo = firstText(bill, 'FISCAL_BILL_NO');
@@ -137,17 +148,18 @@ function processXML(xmlText) {
 
         const d = getOrCreateDoc(fiscalBillNo.replace(/\s/g, ''));
 
-        Array.from(bill.children).forEach((child) => {
+        Array.from(bill.childNodes).filter((n) => n.nodeType === 1).forEach((child) => {
             const childTag = (child.localName || child.tagName || '').toUpperCase();
             if (childTag === 'LIST_G_TAX_GROUP') {
-                const groups = byLocalName(child, 'G_TAX_GROUP');
+                const groups = directChildren(child, 'G_TAX_GROUP');
                 groups.forEach((group, idx) => {
                     const ix = idx + 1;
                     const n = firstText(group, 'N');
                     const desc = firstText(group, 'TAX_GROUP_DESC');
                     setValue(d, `TAX_GROUP_${ix}_N`, n);
                     setValue(d, `TAX_GROUP_${ix}_DESC`, desc);
-                    byLocalName(group, 'G_GROSS_AMT').forEach((amt, aIdx) => {
+                    const grossAmtNodes = byLocalName(group, 'G_GROSS_AMT');
+                    grossAmtNodes.forEach((amt, aIdx) => {
                         const ax = aIdx + 1;
                         setValue(d, `TAX_GROUP_${ix}_GROSS_AMT_${ax}`, firstText(amt, 'GROSS_AMT'));
                         setValue(d, `TAX_GROUP_${ix}_TAX_AMT_${ax}`, firstText(amt, 'TAX_AMT'));
