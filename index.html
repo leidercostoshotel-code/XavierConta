@@ -53,6 +53,7 @@ const tableBody = document.getElementById('table-body');
 const statusMsg = document.getElementById('status');
 const mainTable = document.getElementById('main-table');
 const tableHeadRow = mainTable.querySelector('thead tr');
+const DERIVED_RCONS_HEADER = 'R. CONS. 10%';
 const headerAliases = {
   'LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.NET_AMT': 'OP.GRAVADA',
   'LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.TAX_AMT': 'I.G.V.',
@@ -64,6 +65,31 @@ function getHeaderLabel(header) {
   return headerAliases[header] || header;
 }
 
+
+
+function resolveHeaderKeyByAlias(alias) {
+  return tableHeaders.find(h => getHeaderLabel(h) === alias) || null;
+}
+
+function toNumber(value) {
+  const num = Number(value);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function applyDerivedColumns() {
+  const totalNonRevKey = tableHeaders.find(h => h === 'TOTAL_NONREV') || resolveHeaderKeyByAlias('TOTAL_NONREV');
+  const propinaKey = resolveHeaderKeyByAlias('PROPINA') || tableHeaders.find(h => h === 'PROPINA');
+  if (!totalNonRevKey || !propinaKey) return;
+
+  tableRows.forEach(row => {
+    row[DERIVED_RCONS_HEADER] = (toNumber(row[totalNonRevKey]) - toNumber(row[propinaKey])).toFixed(2);
+  });
+
+  if (!tableHeaders.includes(DERIVED_RCONS_HEADER)) {
+    const totalNonRevIndex = tableHeaders.indexOf(totalNonRevKey);
+    tableHeaders.splice(totalNonRevIndex + 1, 0, DERIVED_RCONS_HEADER);
+  }
+}
 
 fileInput.onchange = (e) => handleFiles(e.target.files);
 
@@ -93,6 +119,7 @@ function processXML(xmlText) {
     tableRows.push(row);
   });
   tableHeaders = Array.from(new Set(tableRows.flatMap(r => Object.keys(r))));
+  applyDerivedColumns();
 }
 
 function flattenNode(node, target, parentKey) {
