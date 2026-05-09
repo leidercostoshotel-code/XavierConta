@@ -20,7 +20,9 @@
         .brand-logo { height:42px; width:auto; object-fit:contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,.15)); }
         h1 { margin:0; color:var(--navy); font-size:42px; font-weight:800; text-transform:capitalize; }
         .subtitle { margin-top:7px; color:#5f6b7c; font-size:17px; font-weight:500; }
+        .premium-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
         .badge-premium { background:linear-gradient(135deg,#111827,#2d4f7c); color:#e5edff; font-size:12px; font-weight:700; letter-spacing:.8px; padding:8px 12px; border-radius:999px; }
+        .accountant-name { color:#f59e0b; font-size:12px; font-weight:800; letter-spacing:.6px; text-transform:uppercase; }
         .status-bar { margin:22px 0; background:linear-gradient(135deg,#143458,#1f4f82 72%,#2d6cad); color:#fff; border-radius:14px; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 14px 28px rgba(24,63,104,.24); font-size:18px; font-weight:600; }
         .drop-zone { border:2px dashed #78a2d3; background:linear-gradient(180deg,#f8fbff,#eff6ff); border-radius:14px; padding:30px; text-align:center; cursor:pointer; color:#2b4f74; margin-bottom:20px; font-weight:600; font-size:28px; display:flex; align-items:center; justify-content:center; gap:12px; }
         .btn-group { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
@@ -73,7 +75,7 @@
 </div>
 
 <div class="container">
-    <div class="hero"><div class="title-wrap"><img class="brand-logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0f/Swiss%C3%B4tel_logo.svg" alt="Logo Swissôtel" onerror="this.style.display='none'"><div class="title-icon"><i class="fa-solid fa-building-columns"></i></div><div><h1>contabilidad</h1><div class="subtitle"><i class="fa-solid fa-hotel"></i> Swissotel Lima Peru.</div></div></div><div class="badge-premium"><i class="fa-solid fa-crown"></i> PREMIUM BUSINESS</div></div>
+    <div class="hero"><div class="title-wrap"><img class="brand-logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0f/Swiss%C3%B4tel_logo.svg" alt="Logo Swissôtel" onerror="this.style.display='none'"><div class="title-icon"><i class="fa-solid fa-building-columns"></i></div><div><h1>contabilidad</h1><div class="subtitle"><i class="fa-solid fa-hotel"></i> Swissotel Lima Peru.</div></div></div><div class="premium-wrap"><div class="badge-premium"><i class="fa-solid fa-crown"></i> PREMIUM BUSINESS</div><div class="accountant-name">OLINDA ORELLANA - ACCOUNTANT</div></div></div>
     <div class="status-bar"><span id="status"><i class="fa-solid fa-chart-line"></i> Listo para procesar archivos</span><span id="counter" style="font-size: 12px; opacity: 0.9;">V23.0.0</span></div>
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-cloud-arrow-up"></i><span>Haga clic o arrastre aquí los reportes XML de Oracle</span><input type="file" id="file-input" multiple accept=".xml,text/xml,application/xml" style="display: none;"></div>
     <div id="results-section" class="results-section hidden">
