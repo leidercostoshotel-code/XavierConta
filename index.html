@@ -171,6 +171,17 @@ function getSerieFromFiscalBillNo(value) {
   return (parts[1] || '').toUpperCase();
 }
 
+
+function getNumeroFromFiscalBillNo(value) {
+  if (!value) return '';
+  const fiscalBillNo = String(value).trim();
+  const parts = fiscalBillNo.split('-');
+  const correlativo = (parts[2] || '').trim();
+  if (!correlativo) return '';
+  const numero = correlativo.replace(/^0+/, '');
+  return numero || '0';
+}
+
 function formatBillGenerationDate(value) {
   if (!value) return '';
   const match = String(value).trim().match(/^(\d{2})-(\d{2})-(\d{2})$/);
@@ -262,7 +273,7 @@ async function exportToExcel() {
   tableHeaders.forEach((_, i) => ws.getColumn(i + 1).width = 22);
 
   const datosWs = workbook.addWorksheet('Datos');
-  datosWs.addRow(['FECHA DOC', 'DOC', 'SERIE']);
+  datosWs.addRow(['FECHA DOC', 'DOC', 'SERIE', 'Nro']);
   const billDateHeader = tableHeaders.find(h => h === 'CHAR_BILL_GENERATION_DATE' || h.endsWith('.CHAR_BILL_GENERATION_DATE'));
   const fiscalBillNoHeader = tableHeaders.find(h => h === 'FISCAL_BILL_NO' || h.endsWith('.FISCAL_BILL_NO'));
   tableRows.forEach(r => {
@@ -270,7 +281,8 @@ async function exportToExcel() {
     datosWs.addRow([
       formatBillGenerationDate(r[billDateHeader]),
       getDocTypeFromFiscalBillNo(fiscalBillNo),
-      getSerieFromFiscalBillNo(fiscalBillNo)
+      getSerieFromFiscalBillNo(fiscalBillNo),
+      getNumeroFromFiscalBillNo(fiscalBillNo)
     ]);
   });
   datosWs.views = [{state: 'frozen', ySplit: 1}];
@@ -282,6 +294,7 @@ async function exportToExcel() {
   datosWs.getColumn(1).width = 16;
   datosWs.getColumn(2).width = 10;
   datosWs.getColumn(3).width = 12;
+  datosWs.getColumn(4).width = 12;
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
