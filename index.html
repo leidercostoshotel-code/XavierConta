@@ -142,6 +142,14 @@ function applyDerivedColumns(row) {
   row[DERIVED_COLUMN_KEY] = (totalNonRev - propina - taxGroup4Gross).toFixed(2);
 }
 
+function formatBillGenerationDate(value) {
+  if (!value) return '';
+  const match = String(value).trim().match(/^(\d{2})-(\d{2})-(\d{2})$/);
+  if (!match) return String(value).trim();
+  const [, day, month, year] = match;
+  return `${Number(day)}/${month}/20${year}`;
+}
+
 fileInput.onchange = (e) => handleFiles(e.target.files);
 
 function handleFiles(files) {
@@ -223,6 +231,21 @@ async function exportToExcel() {
   ws.autoFilter = { from: 'A1', to: ws.getRow(1).getCell(tableHeaders.length).address };
   ws.getRow(1).eachCell(cell => { cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 }; cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } }; cell.alignment = { vertical: 'middle', horizontal: 'center' }; });
   tableHeaders.forEach((_, i) => ws.getColumn(i + 1).width = 22);
+
+  const datosWs = workbook.addWorksheet('Datos');
+  datosWs.addRow(['FECHA DOC']);
+  const billDateHeader = tableHeaders.find(h => h === 'CHAR_BILL_GENERATION_DATE' || h.endsWith('.CHAR_BILL_GENERATION_DATE'));
+  tableRows.forEach(r => {
+    datosWs.addRow([formatBillGenerationDate(r[billDateHeader])]);
+  });
+  datosWs.views = [{state: 'frozen', ySplit: 1}];
+  datosWs.getRow(1).eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+  });
+  datosWs.getColumn(1).width = 16;
+
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const a = document.createElement('a');
