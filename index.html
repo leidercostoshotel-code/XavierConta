@@ -142,6 +142,27 @@ function applyDerivedColumns(row) {
   row[DERIVED_COLUMN_KEY] = (totalNonRev - propina - taxGroup4Gross).toFixed(2);
 }
 
+
+function getDocTypeFromFiscalBillNo(value) {
+  if (!value) return '';
+  const fiscalBillNo = String(value).trim();
+  const [docCode = '', serie = ''] = fiscalBillNo.split('-');
+  const normalizedCode = docCode.padStart(2, '0');
+  const normalizedSerie = serie.toUpperCase();
+
+  const byCode = {
+    '03': 'BOL',
+    '07': 'FAC',
+    '08': 'NCR'
+  };
+
+  if (byCode[normalizedCode]) return byCode[normalizedCode];
+  if (normalizedSerie.startsWith('B')) return 'BOL';
+  if (normalizedSerie.startsWith('F')) return 'FAC';
+  if (normalizedSerie.startsWith('N')) return 'NCR';
+  return '';
+}
+
 function formatBillGenerationDate(value) {
   if (!value) return '';
   const match = String(value).trim().match(/^(\d{2})-(\d{2})-(\d{2})$/);
@@ -233,10 +254,15 @@ async function exportToExcel() {
   tableHeaders.forEach((_, i) => ws.getColumn(i + 1).width = 22);
 
   const datosWs = workbook.addWorksheet('Datos');
-  datosWs.addRow(['FECHA DOC']);
+  datosWs.addRow(['FECHA DOC', 'DOC']);
   const billDateHeader = tableHeaders.find(h => h === 'CHAR_BILL_GENERATION_DATE' || h.endsWith('.CHAR_BILL_GENERATION_DATE'));
+  const fiscalBillNoHeader = tableHeaders.find(h => h === 'FISCAL_BILL_NO' || h.endsWith('.FISCAL_BILL_NO'));
   tableRows.forEach(r => {
-    datosWs.addRow([formatBillGenerationDate(r[billDateHeader])]);
+    const fiscalBillNo = fiscalBillNoHeader ? r[fiscalBillNoHeader] : '';
+    datosWs.addRow([
+      formatBillGenerationDate(r[billDateHeader]),
+      getDocTypeFromFiscalBillNo(fiscalBillNo)
+    ]);
   });
   datosWs.views = [{state: 'frozen', ySplit: 1}];
   datosWs.getRow(1).eachCell(cell => {
@@ -245,6 +271,7 @@ async function exportToExcel() {
     cell.alignment = { vertical: 'middle', horizontal: 'center' };
   });
   datosWs.getColumn(1).width = 16;
+  datosWs.getColumn(2).width = 10;
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
