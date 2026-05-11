@@ -282,22 +282,52 @@ async function exportToExcel() {
   tableHeaders.forEach((_, i) => ws.getColumn(i + 1).width = 22);
 
   const datosWs = workbook.addWorksheet('Datos');
-  datosWs.addRow(['FECHA DOC', 'DOC', 'SERIE', 'Nro', 'Tipo Doc.', '# Pasaporte', '-dejar en blanco-', 'NOMBRE']);
-  const billDateHeader = tableHeaders.find(h => h === 'CHAR_BILL_GENERATION_DATE' || h.endsWith('.CHAR_BILL_GENERATION_DATE'));
-  const fiscalBillNoHeader = tableHeaders.find(h => h === 'FISCAL_BILL_NO' || h.endsWith('.FISCAL_BILL_NO'));
-  const tax1NoHeader = tableHeaders.find(h => h === 'TAX1_NO' || h.endsWith('.TAX1_NO'));
-  const displayNameHeader = tableHeaders.find(h => h === 'DISPLAY_NAME' || h.endsWith('.DISPLAY_NAME'));
+  datosWs.addRow([
+    'FECHA DOC', 'DOC', 'SERIE', 'Nro', 'Tipo Doc.', '# Pasaporte', '-dejar en blanco-', 'NOMBRE',
+    'OP. EXONERADAS', 'OP. GRAVADAS', 'OP. ANAFECTA', 'OP. EXPORTACIÓN', 'OP. GRATUITA', 'T. DSCTO.',
+    'I.G.V', 'R. CONS. 10%', 'PROPINA', 'PAID OUT', 'IMPORTE TOTAL'
+  ]);
+  const getHeaderByTag = (tag) => tableHeaders.find(h => h === tag || h.endsWith(`.${tag}`));
+  const billDateHeader = getHeaderByTag('CHAR_BILL_GENERATION_DATE');
+  const fiscalBillNoHeader = getHeaderByTag('FISCAL_BILL_NO');
+  const tax1NoHeader = getHeaderByTag('TAX1_NO');
+  const displayNameHeader = getHeaderByTag('DISPLAY_NAME');
+  const opExoneradasHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_6.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const opGravadasHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.NET_AMT');
+  const opAnafectaHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_5.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const opExportacionHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_2.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const opGratuitaHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_7.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const tDsctoHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_8.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const igvHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_1.LIST_G_GROSS_AMT.G_GROSS_AMT.TAX_AMT');
+  const rConsHeader = getHeaderByTag(DERIVED_COLUMN_KEY);
+  const propinaHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_3.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const paidOutHeader = getHeaderByTag('LIST_G_TAX_GROUP.G_TAX_GROUP_4.LIST_G_GROSS_AMT.G_GROSS_AMT.GROSS_AMT');
+  const importeTotalHeader = getHeaderByTag('TOTAL_GROSS');
+
+  const getValue = (row, key) => (key ? (row[key] ?? '') : '');
+
   tableRows.forEach(r => {
     const fiscalBillNo = fiscalBillNoHeader ? r[fiscalBillNoHeader] : '';
     datosWs.addRow([
-      formatBillGenerationDate(r[billDateHeader]),
+      formatBillGenerationDate(getValue(r, billDateHeader)),
       getDocTypeFromFiscalBillNo(fiscalBillNo),
       getSerieFromFiscalBillNo(fiscalBillNo),
       getNumeroFromFiscalBillNo(fiscalBillNo),
       getTipoDocNumberFromFiscalBillNo(fiscalBillNo),
-      tax1NoHeader ? (r[tax1NoHeader] ?? '') : '',
+      getValue(r, tax1NoHeader),
       '',
-      displayNameHeader ? (r[displayNameHeader] ?? '') : ''
+      getValue(r, displayNameHeader),
+      getValue(r, opExoneradasHeader),
+      getValue(r, opGravadasHeader),
+      getValue(r, opAnafectaHeader),
+      getValue(r, opExportacionHeader),
+      getValue(r, opGratuitaHeader),
+      getValue(r, tDsctoHeader),
+      getValue(r, igvHeader),
+      getValue(r, rConsHeader),
+      getValue(r, propinaHeader),
+      getValue(r, paidOutHeader),
+      getValue(r, importeTotalHeader)
     ]);
   });
   datosWs.views = [{state: 'frozen', ySplit: 1}];
@@ -306,14 +336,9 @@ async function exportToExcel() {
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E4A77' } };
     cell.alignment = { vertical: 'middle', horizontal: 'center' };
   });
-  datosWs.getColumn(1).width = 16;
-  datosWs.getColumn(2).width = 10;
-  datosWs.getColumn(3).width = 12;
-  datosWs.getColumn(4).width = 12;
-  datosWs.getColumn(5).width = 10;
-  datosWs.getColumn(6).width = 18;
-  datosWs.getColumn(7).width = 20;
-  datosWs.getColumn(8).width = 30;
+  [16,10,12,12,10,18,20,30,16,16,16,16,16,14,12,14,12,12,16].forEach((w, i) => {
+    datosWs.getColumn(i + 1).width = w;
+  });
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
