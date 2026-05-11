@@ -163,6 +163,15 @@ function getDocTypeFromFiscalBillNo(value) {
   return '';
 }
 
+function getTipoDocNumberFromFiscalBillNo(value) {
+  if (!value) return '';
+  const fiscalBillNo = String(value).trim();
+  const [docCode = ''] = fiscalBillNo.split('-');
+  if (!docCode) return '';
+  const numericDocCode = Number(docCode);
+  return Number.isFinite(numericDocCode) ? String(numericDocCode) : '';
+}
+
 
 function getSerieFromFiscalBillNo(value) {
   if (!value) return '';
@@ -273,7 +282,7 @@ async function exportToExcel() {
   tableHeaders.forEach((_, i) => ws.getColumn(i + 1).width = 22);
 
   const datosWs = workbook.addWorksheet('Datos');
-  datosWs.addRow(['FECHA DOC', 'DOC', 'SERIE', 'Nro']);
+  datosWs.addRow(['FECHA DOC', 'DOC', 'SERIE', 'Nro', 'Tipo Doc.']);
   const billDateHeader = tableHeaders.find(h => h === 'CHAR_BILL_GENERATION_DATE' || h.endsWith('.CHAR_BILL_GENERATION_DATE'));
   const fiscalBillNoHeader = tableHeaders.find(h => h === 'FISCAL_BILL_NO' || h.endsWith('.FISCAL_BILL_NO'));
   tableRows.forEach(r => {
@@ -282,7 +291,8 @@ async function exportToExcel() {
       formatBillGenerationDate(r[billDateHeader]),
       getDocTypeFromFiscalBillNo(fiscalBillNo),
       getSerieFromFiscalBillNo(fiscalBillNo),
-      getNumeroFromFiscalBillNo(fiscalBillNo)
+      getNumeroFromFiscalBillNo(fiscalBillNo),
+      getTipoDocNumberFromFiscalBillNo(fiscalBillNo)
     ]);
   });
   datosWs.views = [{state: 'frozen', ySplit: 1}];
@@ -295,6 +305,7 @@ async function exportToExcel() {
   datosWs.getColumn(2).width = 10;
   datosWs.getColumn(3).width = 12;
   datosWs.getColumn(4).width = 12;
+  datosWs.getColumn(5).width = 10;
 
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([buffer], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
